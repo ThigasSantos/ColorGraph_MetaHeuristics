@@ -1,0 +1,20 @@
+
+=== Resultados da Busca Local ===
+Primeira melhoria (Vizinho 1): 5 cores diferentes.
+Melhor melhoria (Vizinho 1): 5 cores diferentes.
+Primeira melhoria (Vizinho 2): 5 cores diferentes.
+Melhor melhoria (Vizinho 2): 5 cores diferentes.
+
+=== Otimização de Temperatura ===
+
+=== Melhor Configuração Encontrada ===
+Temperatura Inicial: 100
+Taxa de Resfriamento: 0.9
+
+=== Resultados da Têmpera Simulada ===
+
+Vizinho 1:
+Número de cores diferentes usadas: 5
+
+Vizinho 2:
+Número de cores diferentes usadas: 5
