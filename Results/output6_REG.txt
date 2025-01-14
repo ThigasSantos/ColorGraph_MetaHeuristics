@@ -5,16 +5,31 @@ Melhor melhoria (Vizinho 1): 31 cores diferentes.
 Primeira melhoria (Vizinho 2): 31 cores diferentes.
 Melhor melhoria (Vizinho 2): 31 cores diferentes.
 
+=== Resultados da Têmpera Simulada ===
+
+Vizinho 1:
+
 === Otimização de Temperatura ===
 
 === Melhor Configuração Encontrada ===
 Temperatura Inicial: 100
 Taxa de Resfriamento: 0.9
-
-=== Resultados da Têmpera Simulada ===
-
-Vizinho 1:
-Número de cores diferentes usadas: 31
+Número de cores diferentes usadas: 32
 
 Vizinho 2:
+
+=== Otimização de Temperatura ===
+
+=== Melhor Configuração Encontrada ===
+Temperatura Inicial: 100
+Taxa de Resfriamento: 0.9
 Número de cores diferentes usadas: 31
+
+Vizinho 3:
+
+=== Otimização de Temperatura ===
+
+=== Melhor Configuração Encontrada ===
+Temperatura Inicial: 700
+Taxa de Resfriamento: 0.97
+Número de cores diferentes usadas: 30

@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include <chrono>
+#include <functional>
 
 class GraphColoring_LocalSearch
 {
@@ -62,7 +63,7 @@ public:
     {
         initialColoring();
         std::vector<int> initialColors = colors;
-        
+
         // Primeira melhoria para vizinhança 1
         auto resultFirstImprovement1 = neighborhood1(true);
         saveResultColorCount("Primeira melhoria (Vizinho 1)", resultFirstImprovement1);
@@ -83,25 +84,64 @@ public:
     std::vector<int> neighborhood1(bool firstImprovement)
     {
         std::vector<int> bestColors = colors;
-        for (int v = 0; v < n; ++v)
+
+        // Identificar clusters (subgrafos conectados)
+        for (int startVertex = 0; startVertex < n; ++startVertex)
         {
-            for (int c = 0; c < numDistinctColors; ++c)
+            // Cluster contendo os vértices conectados ao startVertex
+            std::vector<int> cluster;
+            std::vector<bool> visited(n, false);
+
+            // Realizar uma busca em profundidade (DFS) para encontrar o cluster
+            std::function<void(int)> dfs = [&](int v)
             {
-                if (canColor(v, c))
+                visited[v] = true;
+                cluster.push_back(v);
+                for (int u : adjList[v])
                 {
-                    std::vector<int> tempColors = colors;
-                    tempColors[v] = c;
-                    int newColors = countDistinctColors(tempColors);
-                    if (newColors < numDistinctColors)
+                    if (!visited[u])
                     {
-                        bestColors = tempColors;
-                        numDistinctColors = newColors;
-                        if (firstImprovement)
-                            return bestColors;
+                        dfs(u);
                     }
                 }
+            };
+
+            dfs(startVertex);
+
+            // Obter cores em uso no cluster
+            std::vector<bool> colorsUsed(numDistinctColors, false);
+            for (int v : cluster)
+            {
+                if (colors[v] != -1)
+                {
+                    colorsUsed[colors[v]] = true;
+                }
+            }
+
+            // Tentar recolorir os vértices do cluster com menos cores
+            std::vector<int> tempColors = colors;
+            int newColor = 0;
+            for (int v : cluster)
+            {
+                while (newColor < numDistinctColors && colorsUsed[newColor])
+                {
+                    ++newColor;
+                }
+                tempColors[v] = newColor;
+                colorsUsed[newColor] = true;
+            }
+
+            // Contar o número de cores distintas usadas
+            int newColors = countDistinctColors(tempColors);
+            if (newColors < numDistinctColors)
+            {
+                bestColors = tempColors;
+                numDistinctColors = newColors;
+                if (firstImprovement)
+                    return bestColors;
             }
         }
+
         return bestColors;
     }
 
@@ -130,13 +170,13 @@ public:
         return bestColors;
     }
 
-    void saveResultColorCount(const std::string& description, const std::vector<int>& resultColors)
+    void saveResultColorCount(const std::string &description, const std::vector<int> &resultColors)
     {
         int colorCount = countDistinctColors(resultColors);
         std::cout << description << ": " << colorCount << " cores diferentes.\n";
     }
 
-    void printColors(const std::vector<int>& colors) const
+    void printColors(const std::vector<int> &colors) const
     {
         // for (int i = 0; i < n; ++i)
         // {
@@ -162,7 +202,7 @@ private:
         return true;
     }
 
-    int countDistinctColors(const std::vector<int>& colors) const
+    int countDistinctColors(const std::vector<int> &colors) const
     {
         return *std::max_element(colors.begin(), colors.end()) + 1;
     }
