@@ -27,17 +27,14 @@ public:
 
     void initialColoring()
     {
-        // Passo 1: Inicializar vetor de cores com -1
         std::fill(colors.begin(), colors.end(), -1);
 
-        // Passo 2: Ordenar vértices em ordem decrescente de grau
         std::vector<int> vertices(n);
         for (int i = 0; i < n; ++i)
             vertices[i] = i;
         std::sort(vertices.begin(), vertices.end(), [&](int a, int b)
                   { return adjList[a].size() > adjList[b].size(); });
 
-        // Passo 3: Colorir cada vértice
         for (int v : vertices)
         {
             std::vector<bool> forbiddenColors(n, false);
@@ -59,7 +56,18 @@ public:
             colors[v] = color;
         }
 
-        // Contar o número de cores distintas usadas
+        numDistinctColors = *std::max_element(colors.begin(), colors.end()) + 1;
+    }
+
+    void initialColoring_v2()
+    {
+        srand(static_cast<unsigned>(time(nullptr)));
+
+        for (int i = 0; i < n; ++i)
+        {
+            colors[i] = rand() % 100 + 1; // Valores aleatórios de 1 a 100
+        }
+
         numDistinctColors = *std::max_element(colors.begin(), colors.end()) + 1;
     }
 
@@ -68,6 +76,8 @@ public:
         initialColoring();
         std::vector<int> bestColorsVec = colors;
         int bestCost = numDistinctColors;
+        int initialCollisions = calculateCollisions();
+        int bestCollisions = initialCollisions;
 
         double temperature = initialTemp;
         srand(static_cast<unsigned>(time(nullptr)));
@@ -76,25 +86,29 @@ public:
         {
             std::vector<int> newColors;
 
-            // Escolher vizinhança com base no parâmetro
             if (neighborhoodType == 1)
             {
-                newColors = generateNeighbor1(); // Vizinho 1
+                newColors = generateNeighbor1();
             }
             else if (neighborhoodType == 2)
             {
-                newColors = generateNeighbor2(); // Vizinho 2
-            }else if (neighborhoodType == 3)
+                newColors = generateNeighbor2();
+            }
+            else if (neighborhoodType == 3)
             {
-                newColors = generateNeighbor3(); // Vizinho 3
+                newColors = generateNeighbor3();
             }
 
+            int newCollisions = calculateCollisions(newColors);
             int newCost = countDistinctColors(newColors);
 
-            if (newCost < bestCost || acceptWorseSolution(bestCost, newCost, temperature))
+            if ((newCost < bestCost) ||
+                (newCost == bestCost && newCollisions < bestCollisions) ||
+                acceptWorseSolution(bestCost, newCost, temperature))
             {
                 colors = newColors;
                 bestCost = newCost;
+                bestCollisions = newCollisions;
                 bestColorsVec = colors;
             }
 
@@ -103,59 +117,15 @@ public:
 
         colors = bestColorsVec;
         numDistinctColors = bestCost;
-    }
-
-    void optimizeTemperature(const std::vector<std::pair<int, int>>& edges, int neighborhoodType)
-    {
-        bestTemp = 0.0;
-        bestCoolingRate = 0.0;
-        bestColors = n; // Número máximo inicial
-        const int maxIterationsForTest = 1000; // Iterações fixas para avaliação
-
-        for (double initialTempTest = 100.0; initialTempTest <= 2000.0; initialTempTest += 100.0)
-        {
-            for (double coolingRateTest = 0.90; coolingRateTest <= 0.99; coolingRateTest += 0.01)
-            {
-                GraphColoring_SimulatedAnnealing tempGraph(n, initialTempTest, coolingRateTest, maxIterationsForTest);
-
-                // Adicionar arestas ao grafo temporário
-                for (const auto& edge : edges)
-                {
-                    tempGraph.addEdge(edge.first, edge.second);
-                }
-
-                // Executar a têmpera simulada com a vizinhança escolhida
-                tempGraph.simulatedAnnealing(neighborhoodType);
-
-                // Avaliar o resultado
-                int currentColors = tempGraph.getDistinctColors();
-                if (currentColors < bestColors)
-                {
-                    bestColors = currentColors;
-                    bestTemp = initialTempTest;
-                    bestCoolingRate = coolingRateTest;
-                }
-            }
-        }
-
-        std::cout << "\n=== Melhor Configuração Encontrada ===\n";
-        std::cout << "Temperatura Inicial: " << bestTemp << "\n";
-        std::cout << "Taxa de Resfriamento: " << bestCoolingRate << "\n";
+        std::cout << "Colisões iniciais: " << initialCollisions << ", Colisões finais: " << bestCollisions << "\n";
     }
 
     void printColors() const
     {
+        int finalCollisions = calculateCollisions();
         std::cout << "Número de cores diferentes usadas: " << numDistinctColors << "\n";
+        std::cout << "Colisões finais: " << finalCollisions << "\n";
     }
-
-    int getDistinctColors() const
-    {
-        return numDistinctColors;
-    }
-
-    double getBestTemp() const { return bestTemp; }
-    double getBestCoolingRate() const { return bestCoolingRate; }
-    int getBestColors() const { return bestColors; }
 
 private:
     int n;
@@ -179,7 +149,7 @@ private:
         return true;
     }
 
-    int countDistinctColors(const std::vector<int>& colors) const
+    int countDistinctColors(const std::vector<int> &colors) const
     {
         return *std::max_element(colors.begin(), colors.end()) + 1;
     }
@@ -192,19 +162,49 @@ private:
         return (static_cast<double>(rand()) / RAND_MAX) < probability;
     }
 
+    int calculateCollisions() const
+    {
+        int collisions = 0;
+        for (int v = 0; v < n; ++v)
+        {
+            for (int u : adjList[v])
+            {
+                if (colors[v] == colors[u])
+                {
+                    ++collisions;
+                }
+            }
+        }
+        return collisions / 2;
+    }
+
+    int calculateCollisions(const std::vector<int> &newColors) const
+    {
+        int collisions = 0;
+        for (int v = 0; v < n; ++v)
+        {
+            for (int u : adjList[v])
+            {
+                if (newColors[v] == newColors[u])
+                {
+                    ++collisions;
+                }
+            }
+        }
+        return collisions / 2;
+    }
+
     std::vector<int> generateNeighbor1()
     {
         std::vector<int> newColors = colors;
 
-        // Identificar um cluster
         std::vector<bool> visited(n, false);
         std::vector<int> cluster;
 
-        // Escolher um vértice inicial aleatoriamente
         int startVertex = rand() % n;
 
-        // Realizar DFS para identificar o cluster conectado ao vértice inicial
-        std::function<void(int)> dfs = [&](int v) {
+        std::function<void(int)> dfs = [&](int v)
+        {
             visited[v] = true;
             cluster.push_back(v);
             for (int u : adjList[v])
@@ -218,7 +218,6 @@ private:
 
         dfs(startVertex);
 
-        // Obter as cores atualmente usadas no cluster
         std::vector<bool> colorsUsed(numDistinctColors, false);
         for (int v : cluster)
         {
@@ -228,7 +227,6 @@ private:
             }
         }
 
-        // Tentar recolorir os vértices do cluster com menos cores
         int newColor = 0;
         for (int v : cluster)
         {
@@ -239,6 +237,13 @@ private:
             newColors[v] = newColor;
             colorsUsed[newColor] = true;
         }
+
+        // Garantir que o resultado não é pior que o inicial
+        if (calculateCollisions(newColors) > calculateCollisions())
+        {
+            return colors; // Retorna as cores originais se o novo estado for pior
+        }
+
         return newColors;
     }
 
@@ -246,11 +251,19 @@ private:
     {
         std::vector<int> newColors = colors;
 
-        // Escolher dois vértices aleatórios e trocar suas cores
         int v1 = rand() % n;
         int v2 = rand() % n;
 
-        std::swap(newColors[v1], newColors[v2]);
+        if (v1 != v2)
+        {
+            int higherColorVertex = (colors[v1] > colors[v2]) ? v1 : v2;
+            int lowerColorVertex = (higherColorVertex == v1) ? v2 : v1;
+
+            if (canColor(higherColorVertex, colors[lowerColorVertex]))
+            {
+                newColors[higherColorVertex] = colors[lowerColorVertex];
+            }
+        }
 
         return newColors;
     }
@@ -260,7 +273,6 @@ private:
         std::vector<int> newColors = colors;
         if (rand() % 2 == 0)
         {
-            // Vizinhança 1: Alterar a cor de um vértice
             int v = rand() % n;
             for (int c = 0; c < numDistinctColors; ++c)
             {
@@ -273,10 +285,19 @@ private:
         }
         else
         {
-            // Vizinhança 2: Trocar cores de dois vértices
             int v1 = rand() % n;
             int v2 = rand() % n;
-            std::swap(newColors[v1], newColors[v2]);
+
+            if (v1 != v2)
+            {
+                int higherColorVertex = (colors[v1] > colors[v2]) ? v1 : v2;
+                int lowerColorVertex = (higherColorVertex == v1) ? v2 : v1;
+
+                if (canColor(higherColorVertex, colors[lowerColorVertex]))
+                {
+                    newColors[higherColorVertex] = colors[lowerColorVertex];
+                }
+            }
         }
         return newColors;
     }

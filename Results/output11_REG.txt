@@ -1,35 +1,23 @@
 
 === Resultados da Busca Local ===
-Primeira melhoria (Vizinho 1): 31 cores diferentes.
-Melhor melhoria (Vizinho 1): 31 cores diferentes.
-Primeira melhoria (Vizinho 2): 31 cores diferentes.
-Melhor melhoria (Vizinho 2): 31 cores diferentes.
+Primeira melhoria (Vizinho 1): 101 cores diferentes, Colisões iniciais: 31, Colisões finais: 31.
+Melhor melhoria (Vizinho 1): 101 cores diferentes, Colisões iniciais: 31, Colisões finais: 31.
+Primeira melhoria (Vizinho 2): 101 cores diferentes, Colisões iniciais: 31, Colisões finais: 30.
+Melhor melhoria (Vizinho 2): 101 cores diferentes, Colisões iniciais: 31, Colisões finais: 29.
 
 === Resultados da Têmpera Simulada ===
 
 Vizinho 1:
-
-=== Otimização de Temperatura ===
-
-=== Melhor Configuração Encontrada ===
-Temperatura Inicial: 100
-Taxa de Resfriamento: 0.9
-Número de cores diferentes usadas: 32
+Colisões iniciais: 35, Colisões finais: 35
+Número de cores diferentes usadas: 101
+Colisões finais: 35
 
 Vizinho 2:
-
-=== Otimização de Temperatura ===
-
-=== Melhor Configuração Encontrada ===
-Temperatura Inicial: 100
-Taxa de Resfriamento: 0.9
-Número de cores diferentes usadas: 31
+Colisões iniciais: 27, Colisões finais: 1
+Número de cores diferentes usadas: 76
+Colisões finais: 1
 
 Vizinho 3:
-
-=== Otimização de Temperatura ===
-
-=== Melhor Configuração Encontrada ===
-Temperatura Inicial: 100
-Taxa de Resfriamento: 0.9
-Número de cores diferentes usadas: 28
+Colisões iniciais: 45, Colisões finais: 0
+Número de cores diferentes usadas: 31
+Colisões finais: 0

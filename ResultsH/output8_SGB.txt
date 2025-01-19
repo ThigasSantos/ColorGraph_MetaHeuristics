@@ -1,0 +1,23 @@
+
+=== Resultados da Busca Local ===
+Primeira melhoria (Vizinho 1): 9 cores diferentes, Colisões iniciais: 0, Colisões finais: 0.
+Melhor melhoria (Vizinho 1): 9 cores diferentes, Colisões iniciais: 0, Colisões finais: 0.
+Primeira melhoria (Vizinho 2): 9 cores diferentes, Colisões iniciais: 0, Colisões finais: 0.
+Melhor melhoria (Vizinho 2): 9 cores diferentes, Colisões iniciais: 0, Colisões finais: 0.
+
+=== Resultados da Têmpera Simulada ===
+
+Vizinho 1:
+Colisões iniciais: 0, Colisões finais: 0
+Número de cores diferentes usadas: 9
+Colisões finais: 0
+
+Vizinho 2:
+Colisões iniciais: 0, Colisões finais: 0
+Número de cores diferentes usadas: 9
+Colisões finais: 0
+
+Vizinho 3:
+Colisões iniciais: 0, Colisões finais: 0
+Número de cores diferentes usadas: 9
+Colisões finais: 0

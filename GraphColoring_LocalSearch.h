@@ -23,17 +23,14 @@ public:
 
     void initialColoring()
     {
-        // Passo 1: Inicializar vetor de cores com -1
         std::fill(colors.begin(), colors.end(), -1);
 
-        // Passo 2: Ordenar vértices em ordem decrescente de grau
         std::vector<int> vertices(n);
         for (int i = 0; i < n; ++i)
             vertices[i] = i;
         std::sort(vertices.begin(), vertices.end(), [&](int a, int b)
                   { return adjList[a].size() > adjList[b].size(); });
 
-        // Passo 3: Colorir cada vértice
         for (int v : vertices)
         {
             std::vector<bool> forbiddenColors(n, false);
@@ -55,7 +52,18 @@ public:
             colors[v] = color;
         }
 
-        // Contar o número de cores distintas usadas
+        numDistinctColors = *std::max_element(colors.begin(), colors.end()) + 1;
+    }
+
+    void initialColoring_v2()
+    {
+        srand(static_cast<unsigned>(time(nullptr)));
+
+        for (int i = 0; i < n; ++i)
+        {
+            colors[i] = rand() % 100 + 1; // Valores aleatórios de 1 a 100
+        }
+
         numDistinctColors = *std::max_element(colors.begin(), colors.end()) + 1;
     }
 
@@ -63,36 +71,35 @@ public:
     {
         initialColoring();
         std::vector<int> initialColors = colors;
+        int initialCollisions = calculateCollisions();
 
         // Primeira melhoria para vizinhança 1
         auto resultFirstImprovement1 = neighborhood1(true);
-        saveResultColorCount("Primeira melhoria (Vizinho 1)", resultFirstImprovement1);
+        saveResult("Primeira melhoria (Vizinho 1)", resultFirstImprovement1, initialCollisions);
 
         // Melhor melhoria para vizinhança 1
         auto resultBestImprovement1 = neighborhood1(false);
-        saveResultColorCount("Melhor melhoria (Vizinho 1)", resultBestImprovement1);
+        saveResult("Melhor melhoria (Vizinho 1)", resultBestImprovement1, initialCollisions);
 
         // Primeira melhoria para vizinhança 2
         auto resultFirstImprovement2 = neighborhood2(true);
-        saveResultColorCount("Primeira melhoria (Vizinho 2)", resultFirstImprovement2);
+        saveResult("Primeira melhoria (Vizinho 2)", resultFirstImprovement2, initialCollisions);
 
         // Melhor melhoria para vizinhança 2
         auto resultBestImprovement2 = neighborhood2(false);
-        saveResultColorCount("Melhor melhoria (Vizinho 2)", resultBestImprovement2);
+        saveResult("Melhor melhoria (Vizinho 2)", resultBestImprovement2, initialCollisions);
     }
 
     std::vector<int> neighborhood1(bool firstImprovement)
     {
         std::vector<int> bestColors = colors;
+        int bestCollisions = calculateCollisions();
 
-        // Identificar clusters (subgrafos conectados)
         for (int startVertex = 0; startVertex < n; ++startVertex)
         {
-            // Cluster contendo os vértices conectados ao startVertex
             std::vector<int> cluster;
             std::vector<bool> visited(n, false);
 
-            // Realizar uma busca em profundidade (DFS) para encontrar o cluster
             std::function<void(int)> dfs = [&](int v)
             {
                 visited[v] = true;
@@ -108,7 +115,6 @@ public:
 
             dfs(startVertex);
 
-            // Obter cores em uso no cluster
             std::vector<bool> colorsUsed(numDistinctColors, false);
             for (int v : cluster)
             {
@@ -118,7 +124,6 @@ public:
                 }
             }
 
-            // Tentar recolorir os vértices do cluster com menos cores
             std::vector<int> tempColors = colors;
             int newColor = 0;
             for (int v : cluster)
@@ -131,12 +136,11 @@ public:
                 colorsUsed[newColor] = true;
             }
 
-            // Contar o número de cores distintas usadas
-            int newColors = countDistinctColors(tempColors);
-            if (newColors < numDistinctColors)
+            int newCollisions = calculateCollisions(tempColors);
+            if (newCollisions < bestCollisions)
             {
                 bestColors = tempColors;
-                numDistinctColors = newColors;
+                bestCollisions = newCollisions;
                 if (firstImprovement)
                     return bestColors;
             }
@@ -148,41 +152,40 @@ public:
     std::vector<int> neighborhood2(bool firstImprovement)
     {
         std::vector<int> bestColors = colors;
+        int bestCollisions = calculateCollisions();
+
         for (int v1 = 0; v1 < n; ++v1)
         {
             for (int v2 = 0; v2 < n; ++v2)
             {
                 if (colors[v1] != colors[v2])
                 {
+                    int higherColorVertex = (colors[v1] > colors[v2]) ? v1 : v2;
+                    int lowerColorVertex = (higherColorVertex == v1) ? v2 : v1;
+
                     std::vector<int> tempColors = colors;
-                    std::swap(tempColors[v1], tempColors[v2]);
-                    int newColors = countDistinctColors(tempColors);
-                    if (newColors < numDistinctColors)
+                    tempColors[higherColorVertex] = tempColors[lowerColorVertex];
+
+                    int newCollisions = calculateCollisions(tempColors);
+                    if (newCollisions < bestCollisions)
                     {
                         bestColors = tempColors;
-                        numDistinctColors = newColors;
+                        bestCollisions = newCollisions;
                         if (firstImprovement)
                             return bestColors;
                     }
                 }
             }
         }
+
         return bestColors;
     }
 
-    void saveResultColorCount(const std::string &description, const std::vector<int> &resultColors)
+    void saveResult(const std::string &description, const std::vector<int> &resultColors, int initialCollisions)
     {
+        int finalCollisions = calculateCollisions(resultColors);
         int colorCount = countDistinctColors(resultColors);
-        std::cout << description << ": " << colorCount << " cores diferentes.\n";
-    }
-
-    void printColors(const std::vector<int> &colors) const
-    {
-        // for (int i = 0; i < n; ++i)
-        // {
-        //     std::cout << "Vértice " << i << " -> Cor " << colors[i] << "\n";
-        // }
-        std::cout << "Número de cores diferentes usadas: " << countDistinctColors(colors) << "\n";
+        std::cout << description << ": " << colorCount << " cores diferentes, Colisões iniciais: " << initialCollisions << ", Colisões finais: " << finalCollisions << ".\n";
     }
 
 private:
@@ -192,14 +195,49 @@ private:
     std::vector<std::vector<int>> adjList;
     std::vector<int> colors;
 
-    bool canColor(int v, int color) const
+    bool isColoringValid(const std::vector<int> &tempColors) const
     {
-        for (int u : adjList[v])
+        for (int v = 0; v < n; ++v)
         {
-            if (colors[u] == color)
-                return false;
+            for (int u : adjList[v])
+            {
+                if (tempColors[v] == tempColors[u])
+                    return false;
+            }
         }
         return true;
+    }
+
+    int calculateCollisions() const
+    {
+        int collisions = 0;
+        for (int v = 0; v < n; ++v)
+        {
+            for (int u : adjList[v])
+            {
+                if (colors[v] == colors[u])
+                {
+                    ++collisions;
+                }
+            }
+        }
+        return collisions / 2;
+    }
+
+    int calculateCollisions(const std::vector<int> &tempColors) const
+    {
+        int collisions = 0;
+        for (int v = 0; v < n; ++v)
+        {
+            for (int u : adjList[v])
+            {
+                if (tempColors[v] == tempColors[u])
+                {
+                    ++collisions;
+                }
+            }
+        }
+        return collisions / 2;
     }
 
     int countDistinctColors(const std::vector<int> &colors) const
